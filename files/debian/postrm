@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+  purge|remove)
+    if [ -e /opt/telegram ]; then
+      rm -rf /opt/telegram
+    fi
+  ;;
+
+esac
+
+
+
+exit 0

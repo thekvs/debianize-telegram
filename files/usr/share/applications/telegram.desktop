@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Terminal=false
+Name=Telegram Desktop
+Exec=/opt/telegram/Telegram -- %u
+Comment=Official desktop version of Telegram messaging app
+Icon=/opt/telegram/telegram.svg
+StartupWMClass=Telegram
+Categories=GNOME;GTK;Network;
+MimeType=application/x-xdg-protocol-tg;x-scheme-handler/tg;
+X-Desktop-File-Install-Version=0.22
