@@ -19,7 +19,7 @@ import requests
 LOG_LEVEL = logging.INFO
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s')
-log = logging.getLogger("vim-go-utils")
+log = logging.getLogger("telegram")
 log.setLevel(LOG_LEVEL)
 
 
@@ -83,7 +83,7 @@ def get_latest_github_release_url(owner, project):
         if "label" in asset and asset["label"] == "Linux 64 bit: Binary":
             return (asset["browser_download_url"], version)
 
-    return None
+    raise Exception("No precompiled binaries found for Linux x86_64")
 
 
 def create_deb_package(args, root):
@@ -97,8 +97,6 @@ def create_deb_package(args, root):
     os.makedirs(dl_dir, exist_ok=True)
 
     url, version = get_latest_github_release_url("telegramdesktop", "tdesktop")
-    if url is None:
-        raise Exception("No precompiled binaries found for 'tdesktop' project")
 
     tmp_archive = tempfile.mktemp()
     cmd = "{wget} -q {url} -P {dl_dir} -O {archive}".format(wget=utils["wget"], url=url, dl_dir=dl_dir, archive=tmp_archive)
@@ -129,10 +127,15 @@ def create_deb_package(args, root):
     os.chdir(args.result_dir)
 
     log.info("building deb package")
-    cmd = "{fpm} -s dir -t deb -n telegram --version {version} --deb-compression xz " \
+    cmd = "{fpm} " \
+          "--input-type dir " \
+          "--output-type deb " \
+          "--name telegram " \
+          "--version {version} " \
+          "--deb-compression xz " \
           "--description \"Telegram Desktop\" " \
           "--maintainer \"Konstantin Sorokin <kvs@sigterm.ru>\" " \
-          " -C {base_dir}".format(fpm=utils["fpm"], version=version, base_dir=install_base_dir)
+          "--chdir {base_dir}".format(fpm=utils["fpm"], version=version, base_dir=install_base_dir)
     exec_cmd(cmd, True)
 
     log.info("package(s) created in {}".format(args.result_dir))
