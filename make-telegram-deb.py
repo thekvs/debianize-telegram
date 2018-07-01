@@ -26,7 +26,7 @@ log.setLevel(LOG_LEVEL)
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--result-dir", type=str, metavar="arg", default="/tmp/",
-                        help="directory where to put deb and rpm packages")
+                        help="directory where to put deb package")
     args = parser.parse_args()
 
     return args
@@ -83,7 +83,7 @@ def get_latest_github_release_url(owner, project):
         if "label" in asset and asset["label"] == "Linux 64 bit: Binary":
             return (asset["browser_download_url"], version)
 
-    raise Exception("No precompiled binaries found for Linux x86_64")
+    raise Exception("No precompiled binaries found for Linux x86_64 target.")
 
 
 def create_deb_package(args, root):
@@ -100,7 +100,7 @@ def create_deb_package(args, root):
 
     tmp_archive = tempfile.mktemp()
     cmd = "{wget} -q {url} -P {dl_dir} -O {archive}".format(wget=utils["wget"], url=url, dl_dir=dl_dir, archive=tmp_archive)
-    log.info("downloading precompiled package '{}' to '{}' file".format(url, tmp_archive))
+    log.info("downloading precompiled Telegram package '{}'".format(url))
     exec_cmd(cmd)
 
     cmd = "{tar} xfJ {fn} -C {target_dir}".format(tar=utils["tar"], fn=tmp_archive, target_dir=dl_dir)
@@ -108,14 +108,14 @@ def create_deb_package(args, root):
 
     os.unlink(tmp_archive)
 
-    log.info("copying '{src}' to '{dst}'".format(src=os.path.join(dl_dir, "Telegram"), dst=install_dir))
+    log.debug("copying '{src}' to '{dst}'".format(src=os.path.join(dl_dir, "Telegram"), dst=install_dir))
     shutil.copytree(os.path.join(dl_dir, "Telegram"), install_dir)
 
     os.chdir(install_dir)
 
     shutil.move("Telegram", "telegram")
 
-    log.info("copying '{src}' to '{dst}'".format(src=os.path.join(work_dir, "files", "usr"), dst=install_base_dir))
+    log.debug("copying '{src}' to '{dst}'".format(src=os.path.join(work_dir, "files", "usr"), dst=install_base_dir))
     shutil.copytree(os.path.join(work_dir, "files", "usr"), os.path.join(install_base_dir, "usr"))
 
     shutil.copy(os.path.join(work_dir, "files", "opt", "telegram", "Telegram"), install_dir)
@@ -138,7 +138,7 @@ def create_deb_package(args, root):
           "--chdir {base_dir}".format(fpm=utils["fpm"], version=version, base_dir=install_base_dir)
     exec_cmd(cmd, True)
 
-    log.info("package(s) created in {}".format(args.result_dir))
+    log.info("package created in '{}' directory".format(args.result_dir))
 
     shutil.rmtree(root)
 
@@ -147,7 +147,7 @@ def main():
     args = parse_args()
 
     tmp_dir = tempfile.mkdtemp()
-    log.info("temporary work directory is '{}'".format(tmp_dir))
+    log.debug("temporary work directory is '{}'".format(tmp_dir))
 
     create_deb_package(args, tmp_dir)
 
