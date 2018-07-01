@@ -138,7 +138,7 @@ def create_deb_package(args, root):
           "--chdir {base_dir}".format(fpm=utils["fpm"], version=version, base_dir=install_base_dir)
     exec_cmd(cmd, True)
 
-    log.info("package created in '{}' directory".format(args.result_dir))
+    log.info("deb package created in '{}' directory".format(args.result_dir))
 
     shutil.rmtree(root)
 
