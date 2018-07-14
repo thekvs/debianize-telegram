@@ -24,9 +24,10 @@ log.setLevel(LOG_LEVEL)
 
 
 def parse_args():
+    default_result_dir = os.getcwd()
     parser = argparse.ArgumentParser()
-    parser.add_argument("--result-dir", type=str, metavar="arg", default="/tmp/",
-                        help="directory where to put deb package")
+    parser.add_argument("--result-dir", type=str, metavar="arg", default=default_result_dir,
+                        help="directory where to put generated deb package")
     args = parser.parse_args()
 
     return args
