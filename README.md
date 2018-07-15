@@ -1,6 +1,6 @@
 ## About
 
-Package latest version of Telegram messanger for Linux in deb format.
+Package the latest version of Telegram messanger for Linux in deb format.
 
 ## Usage
 
