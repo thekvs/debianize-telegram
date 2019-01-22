@@ -1,6 +1,6 @@
 ## About
 
-Package the latest version of Telegram messenger for Linux in deb format.
+Package the [latest version](https://github.com/telegramdesktop/tdesktop/releases) of Telegram messenger for Linux in deb format.
 
 ## Usage
 
