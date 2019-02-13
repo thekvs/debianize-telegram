@@ -69,7 +69,7 @@ def get_latest_github_release_url(owner, project):
     if r.status_code and r.status_code > 300:
         raise Exception("failed to fetch url '{}', status code {}".format(url, r.status_code))
 
-    js = json.loads(r.text)
+    js = json.loads(r.content)
     if "assets" not in js:
         raise Exception("No precompiled assets found")
 
