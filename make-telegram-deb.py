@@ -24,9 +24,9 @@ log.setLevel(LOG_LEVEL)
 
 
 def parse_args():
-    default_result_dir = os.getcwd()
+    default_dir = os.getcwd()
     parser = argparse.ArgumentParser()
-    parser.add_argument("--result-dir", type=str, metavar="arg", default=default_result_dir,
+    parser.add_argument("--dir", type=str, metavar="arg", default=default_dir,
                         help="directory where to put generated deb package")
     args = parser.parse_args()
 
@@ -61,7 +61,8 @@ def find_utils(utils):
 
 def get_latest_github_release_url(owner, project):
     if platform.machine() != "x86_64":
-        raise Exception("Architecture {arch} unsupported by {project} project".format(arch=platform.machine(), project=project))
+        raise Exception("Architecture {arch} unsupported by {project} project".format(
+            arch=platform.machine(), project=project))
 
     url = "https://api.github.com/repos/{owner}/{project}/releases/latest".format(owner=owner, project=project)
 
@@ -100,7 +101,8 @@ def create_deb_package(args, root):
     url, version = get_latest_github_release_url("telegramdesktop", "tdesktop")
 
     tmp_archive = tempfile.mktemp()
-    cmd = "{wget} -q {url} -P {dl_dir} -O {archive}".format(wget=utils["wget"], url=url, dl_dir=dl_dir, archive=tmp_archive)
+    cmd = "{wget} -q {url} -P {dl_dir} -O {archive}".format(
+        wget=utils["wget"], url=url, dl_dir=dl_dir, archive=tmp_archive)
     log.info("downloading precompiled Telegram package '{}'".format(url))
     exec_cmd(cmd)
 
@@ -122,10 +124,10 @@ def create_deb_package(args, root):
     shutil.copy(os.path.join(work_dir, "files", "opt", "telegram", "Telegram"), install_dir)
     shutil.copy(os.path.join(work_dir, "files", "opt", "telegram", "telegram.svg"), install_dir)
 
-    if not os.path.exists(args.result_dir):
-        os.makedirs(args.result_dir, exist_ok=True)
+    if not os.path.exists(args.dir):
+        os.makedirs(args.dir, exist_ok=True)
 
-    os.chdir(args.result_dir)
+    os.chdir(args.dir)
 
     log.info("building deb package")
     cmd = "{fpm} " \
@@ -139,7 +141,7 @@ def create_deb_package(args, root):
           "--chdir {base_dir}".format(fpm=utils["fpm"], version=version, base_dir=install_base_dir)
     exec_cmd(cmd, True)
 
-    log.info("deb package created in '{}' directory".format(args.result_dir))
+    log.info("deb package created in the '{}' directory".format(args.dir))
 
     shutil.rmtree(root)
 
