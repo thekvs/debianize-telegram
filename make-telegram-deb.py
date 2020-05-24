@@ -28,6 +28,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", type=str, metavar="arg", default=default_dir,
                         help="directory where to put generated deb package")
+    parser.add_argument("--version", type=str, metavar="arg", required=False,
+                        help="version to download")
     args = parser.parse_args()
 
     return args
@@ -59,31 +61,30 @@ def find_utils(utils):
     return path
 
 
-def get_latest_github_release_url(owner, project):
+def get_latest_github_release_url(owner, project, version):
     if platform.machine() != "x86_64":
         raise Exception("Architecture {arch} unsupported by {project} project".format(
             arch=platform.machine(), project=project))
 
-    url = "https://api.github.com/repos/{owner}/{project}/releases/latest".format(owner=owner, project=project)
+    if version is not None and len(version) > 0 and version[0] != 'v':
+        version = "v" + version
+
+    url = "https://api.github.com/repos/{owner}/{project}/releases".format(owner=owner, project=project)
 
     r = requests.get(url)
     if r.status_code and r.status_code > 300:
         raise Exception("failed to fetch url '{}', status code {}".format(url, r.status_code))
 
     js = json.loads(r.content)
-    if "assets" not in js:
-        raise Exception("No precompiled assets found")
 
-    if "tag_name" not in js:
-        raise Exception("Couldn't find version info")
+    for e in js:
+        if version is None:
+            version = e["tag_name"]
 
-    version = js["tag_name"]
-    if version[0] == 'v':
-        version = version[1:]
-
-    for asset in js["assets"]:
-        if "label" in asset and asset["label"] == "Linux 64 bit: Binary":
-            return (asset["browser_download_url"], version)
+        if version == e["tag_name"]:
+            for asset in e["assets"]:
+                if "label" in asset and asset["label"] == "Linux 64 bit: Binary":
+                    return (asset["browser_download_url"], version)
 
     raise Exception("No precompiled binaries found for Linux x86_64 target.")
 
@@ -98,7 +99,9 @@ def create_deb_package(args, root):
 
     os.makedirs(dl_dir, exist_ok=True)
 
-    url, version = get_latest_github_release_url("telegramdesktop", "tdesktop")
+    version = args.version if args.version else None
+    url, version = get_latest_github_release_url("telegramdesktop", "tdesktop", version)
+    version = version[1:] if version[0] == 'v' else version
 
     tmp_archive = tempfile.mktemp()
     cmd = "{wget} -q {url} -P {dl_dir} -O {archive}".format(
